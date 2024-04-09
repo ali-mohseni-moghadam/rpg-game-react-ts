@@ -1,17 +1,18 @@
-import { Vector3, ArcRotateCamera } from "@babylonjs/core";
+import { Vector3, FreeCamera, CreateGround, Mesh } from "@babylonjs/core";
 
 export default class Camera {
-  camera: ArcRotateCamera;
+  cameraContainer: Mesh;
 
   constructor() {
-    this.camera = new ArcRotateCamera(
-      "camera",
-      Math.PI / 2,
-      0.02,
-      4,
-      new Vector3()
-    );
-    this.camera.minZ = 0.01;
-    this.camera.maxZ = 50;
+    const camera = new FreeCamera("camera", new Vector3(0, 0, -8));
+
+    // Camera Container
+    this.cameraContainer = CreateGround("ground", {
+      width: 0.5,
+      height: 0.5,
+    });
+    this.cameraContainer.position = new Vector3(0, 13, 0);
+    camera.parent = this.cameraContainer;
+    camera.setTarget(new Vector3(0, -10, 0));
   }
 }

@@ -3,7 +3,10 @@ import Debugger from "./Debugger";
 import Environment from "./Environment";
 import Camera from "./Camera";
 import Grounds from "./Ground";
-import useStore from "../store/index.store";
+// import useStore from "../store/index.store";
+import GameScene from "./GameScene";
+import Character from "./Character";
+import { Tree } from "./Tree";
 
 export default class Game {
   private static instance: Game | undefined;
@@ -48,6 +51,10 @@ export default class Game {
     new Environment();
     new Grounds();
 
+    new GameScene();
+    new Character();
+    new Tree();
+
     if (process.env.NODE_ENV === "development") {
       const debugLayer = new Debugger();
       await debugLayer.init();
@@ -55,12 +62,12 @@ export default class Game {
 
     await this.scene.whenReadyAsync();
 
-    let test = 0;
-    setInterval(() => {
-      const { setTest } = useStore.getState();
-      test++
-      setTest(test);
-    }, 1000);
+    // let test = 0;
+    // setInterval(() => {
+    //   const { setTest } = useStore.getState();
+    //   test++
+    //   setTest(test);
+    // }, 1000);
 
     this.engine.runRenderLoop(() => this.scene.render());
   }

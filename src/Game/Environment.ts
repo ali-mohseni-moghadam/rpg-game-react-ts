@@ -15,7 +15,7 @@ export default class Environment {
     const scene = Game.getInstance().scene;
     const light = new HemisphericLight(
       "HemisphericLight",
-      new Vector3(-1, 2, 0),
+      new Vector3(0, 10, 0),
       scene
     );
     light.diffuse = new Color3(1, 1, 1);
