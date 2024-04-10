@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-import { CreateBox, Scene, SceneLoader } from "@babylonjs/core";
-=======
 import {
   AnimationGroup,
   CreateBox,
@@ -11,16 +8,10 @@ import {
   SceneLoader,
   Vector3,
 } from "@babylonjs/core";
->>>>>>> ca35be6 (move player with mouse | add movePlayer, run and caculate method)
 import Game from "./Game";
 
 export default class Character {
   scene: Scene;
-<<<<<<< HEAD
-  constructor() {
-    this.scene = Game.getInstance().scene;
-    this.loadCharcter();
-=======
   characterBox!: Mesh;
 
   isMoving: boolean = false;
@@ -35,7 +26,6 @@ export default class Character {
     this.scene.onPointerDown = (event: IPointerEvent) => {
       this.movePlayer(event);
     };
->>>>>>> ca35be6 (move player with mouse | add movePlayer, run and caculate method)
   }
 
   async loadCharcter() {
@@ -49,19 +39,11 @@ export default class Character {
 
       if (!model) return;
 
-<<<<<<< HEAD
-      const animation = model.animationGroups;
-
-      const meshes = model.meshes;
-      const rootMesh = meshes[0];
-      const characterBox = CreateBox(
-=======
       this.animation = model.animationGroups;
 
       const meshes = model.meshes;
       const rootMesh = meshes[0];
       this.characterBox = CreateBox(
->>>>>>> ca35be6 (move player with mouse | add movePlayer, run and caculate method)
         "characterBox",
         {
           size: 1,
@@ -69,29 +51,16 @@ export default class Character {
         },
         this.scene
       );
-<<<<<<< HEAD
-      rootMesh.parent = characterBox;
-      characterBox.visibility = 0;
-      rootMesh.position.y = -1;
-      characterBox.position.y = 1;
-
-      animation.forEach((anim) =>
-        anim.name === "idle" ? anim.play(true) : null
-      );
-=======
       rootMesh.parent = this.characterBox;
       this.characterBox.visibility = 0;
       rootMesh.position.y = -1;
       this.characterBox.position.y += 1;
 
       this.animation.forEach((anim) => anim.name === "idle" && anim.play(true));
->>>>>>> ca35be6 (move player with mouse | add movePlayer, run and caculate method)
     } catch (error) {
       console.log(`error happend ${error}`);
     }
   }
-<<<<<<< HEAD
-=======
 
   movePlayer(event: IPointerEvent) {
     if (!this.characterBox) return;
@@ -146,5 +115,4 @@ export default class Character {
       (anim) => anim.name === "running" && anim.play(true)
     );
   }
->>>>>>> ca35be6 (move player with mouse | add movePlayer, run and caculate method)
 }
