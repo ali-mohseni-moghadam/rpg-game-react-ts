@@ -1,10 +1,4 @@
-import {
-  Color3,
-  CreateGround,
-  Mesh,
-  StandardMaterial,
-  Texture,
-} from "@babylonjs/core";
+import { CreateGround, Mesh, StandardMaterial, Texture } from "@babylonjs/core";
 
 export default class Grounds {
   ground: Mesh;

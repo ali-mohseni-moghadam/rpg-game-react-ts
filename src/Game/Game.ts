@@ -5,11 +5,11 @@ import Camera from "./Camera";
 import Grounds from "./Ground";
 // import useStore from "../store/index.store";
 import GameScene from "./GameScene";
-import Character from "./Character";
-import { Tree } from "./Tree";
+import Tree from "./Tree";
 
 export default class Game {
   private static instance: Game | undefined;
+  gameScene!: GameScene;
 
   static getInstance() {
     if (!this.instance) {
@@ -51,8 +51,7 @@ export default class Game {
     new Environment();
     new Grounds();
 
-    new GameScene();
-    new Character();
+    this.gameScene = new GameScene();
     new Tree();
 
     if (process.env.NODE_ENV === "development") {
