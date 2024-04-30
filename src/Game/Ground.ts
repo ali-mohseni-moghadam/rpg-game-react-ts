@@ -1,12 +1,23 @@
-import { CreateGround, Mesh, StandardMaterial, Texture } from "@babylonjs/core";
+import {
+  CreateGround,
+  Mesh,
+  PhysicsAggregate,
+  PhysicsShapeType,
+  StandardMaterial,
+  Texture,
+} from "@babylonjs/core";
+import Game from "./Game";
 
 export default class Grounds {
   ground: Mesh;
+  groundAggregate: PhysicsAggregate;
   constructor() {
     this.ground = CreateGround("base_ground", {
       width: 50,
       height: 50,
     });
+
+    const scene = Game.getInstance().scene;
 
     const groundMaterial = new StandardMaterial("groundMaterial");
 
@@ -24,5 +35,14 @@ export default class Grounds {
     // groundMaterial.specularColor = new Color3(0, 0, 0);
 
     this.ground.material = groundMaterial;
+
+    this.groundAggregate = new PhysicsAggregate(
+      this.ground,
+      PhysicsShapeType.BOX,
+      {
+        mass: 0,
+      },
+      scene
+    );
   }
 }

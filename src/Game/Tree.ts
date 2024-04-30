@@ -2,6 +2,8 @@ import {
   AbstractMesh,
   Mesh,
   Nullable,
+  PhysicsAggregate,
+  PhysicsShapeType,
   Scalar,
   Scene,
   SceneLoader,
@@ -11,6 +13,7 @@ import Game from "./Game";
 
 export default class Tree {
   scene: Scene;
+
   createTextMesh: (
     textToDisplay: string,
     color: string,
@@ -18,6 +21,9 @@ export default class Tree {
     theParent: Nullable<AbstractMesh>,
     posY: number
   ) => Mesh;
+
+  treeAggregate!: PhysicsAggregate;
+
   constructor() {
     this.scene = Game.getInstance().scene;
     this.createTextMesh = Game.getInstance().gameScene.createTextMesh;
@@ -38,6 +44,13 @@ export default class Tree {
     tree.parent = null;
     mainTree.meshes[0].dispose();
 
+    this.treeAggregate = new PhysicsAggregate(
+      tree,
+      PhysicsShapeType.BOX,
+      { mass: 0 },
+      this.scene
+    );
+
     let treeLength = 25;
     let radius = 25;
 
@@ -46,7 +59,11 @@ export default class Tree {
       const randomY = Scalar.RandomRange(-radius, radius);
 
       const treeClone = tree.clone("tree", null);
+
+      if (!treeClone?.physicsBody) return;
+      treeClone.physicsBody.disablePreStep = false;
       this.createTextMesh("Tree", "brown", this.scene, treeClone, 4.9);
+
       if (treeClone) treeClone.position = new Vector3(randomX, 0, randomY);
     }
 

@@ -9,6 +9,9 @@ import {
   KeyboardInfo,
   Mesh,
   Nullable,
+  PhysicsAggregate,
+  PhysicsMotionType,
+  PhysicsShapeType,
   Scene,
   SceneLoader,
   Vector3,
@@ -36,6 +39,12 @@ export default class GameScene {
   animation!: AnimationGroup[];
 
   targetBox!: Mesh;
+  characterAggregate!: PhysicsAggregate;
+
+  direction: Vector3 = Vector3.Zero();
+
+  rootMesh!: AbstractMesh;
+
   // targetId: number | undefined;
 
   constructor() {
@@ -81,28 +90,42 @@ export default class GameScene {
       "../",
       "character.glb",
       this.scene
-    ).then((model) => {
-      if (!model) return;
+    );
+    if (!Model) return;
 
-      this.animation = model.animationGroups;
+    this.animation = Model.animationGroups;
 
-      const meshes = model.meshes;
-      const rootMesh = meshes[0];
-      this.characterBox = CreateBox(
-        "characterBox",
-        {
-          size: 1,
-          height: 2,
-        },
-        this.scene
-      );
-      rootMesh.parent = this.characterBox;
-      this.characterBox.visibility = 0;
-      rootMesh.position.y = -1;
-      this.characterBox.position.y += 1;
+    const meshes = Model.meshes;
+    this.rootMesh = meshes[0];
+    this.characterBox = CreateBox(
+      "characterBox",
+      {
+        size: 1,
+        height: 2,
+      },
+      this.scene
+    );
+    this.rootMesh.parent = this.characterBox;
+    this.characterBox.visibility = 0;
+    this.rootMesh.position.y = -1;
+    this.characterBox.position.y += 1;
 
-      this.animation.forEach((anim) => anim.name === "idle" && anim.play(true));
+    this.animation.forEach((anim) => anim.name === "idle" && anim.play(true));
+
+    // physics
+    this.characterAggregate = new PhysicsAggregate(
+      this.characterBox,
+      PhysicsShapeType.BOX,
+      undefined,
+      this.scene
+    );
+    this.characterAggregate.body.setMassProperties({
+      mass: 1,
+      inertia: Vector3.Zero(),
     });
+    this.characterAggregate.body.setMotionType(PhysicsMotionType.DYNAMIC);
+    // console.log(this.characterAggregate.body.getMotionType());
+    this.createTextMesh("Ali", "White", this.scene, this.characterBox, 2);
   }
 
   movePlayer(event: IPointerEvent) {
@@ -127,39 +150,40 @@ export default class GameScene {
         this.characterBox.position
       );
 
+      this.direction = this.ourTargetPosition.subtract(
+        this.characterBox.position
+      );
+      this.direction.normalize();
+      this.direction = this.direction.scale(4);
+
       if (this.targetName === "base_ground") {
-        if (distance < 1) return console.log("we are near on our target");
-        this.Run(this.ourTargetPosition);
+        if (distance < 1) return console.log("we are near our target");
+        if (this.direction) this.run(this.ourTargetPosition);
       }
     }
   }
 
-  Run(ourTargetPosition: Vector3) {
+  run(ourTargetPosition: Vector3) {
     this.isMoving = true;
     this.isAttacking = false;
 
-    const { x, z } = ourTargetPosition;
-    this.characterBox.lookAt(
-      new Vector3(x, this.characterBox.position.y, z),
-      0,
-      0,
-      0
-    );
-
     if (!this.animation) return;
-    // this.animation.forEach((anim) => anim.name === "idle" && anim.stop());
-    // this.animation.forEach((anim) => anim.name === "attack" && anim.stop());
-    this.animation.forEach(
-      (anim) => anim.name === "running" && anim.play(true)
-    );
+    this.animation.forEach((anim) => {
+      if (anim.name === "idle" || anim.name === "attack") {
+        anim.stop();
+      } else if (anim.name === "running") {
+        anim.play(true);
+      }
+    });
   }
 
-  Stop() {
+  stop() {
     this.isMoving = false;
     this.animation.forEach((anim) => anim.name === "running" && anim.stop());
     this.animation.forEach((anim) => anim.name === "attack" && anim.stop());
     this.animation.forEach((anim) => anim.name === "idle" && anim.play(true));
     this.ourTargetPosition = undefined;
+    this.direction.set(0, 0, 0);
   }
 
   caculateDistance(ourTargetPosition: Vector3, ourPosition: Vector3) {
@@ -171,8 +195,8 @@ export default class GameScene {
     const targetBox = CreateBox(
       "targetbox",
       {
-        size: 0.2,
-        height: 0.2,
+        size: 1,
+        height: 1,
       },
       this.scene
     );
@@ -186,7 +210,7 @@ export default class GameScene {
           parameter: this.characterBox,
         },
         () => {
-          this.Stop();
+          this.stop();
         }
       )
     );
@@ -225,6 +249,13 @@ export default class GameScene {
     const engine = Game.getInstance().engine;
     const delta = engine.getDeltaTime() / 1000;
 
+    this.characterAggregate.body.setLinearVelocity(this.direction);
+
+    if (!this.ourTargetPosition) return;
+    const { x, z } = this.ourTargetPosition;
+    this.characterBox.lookAt(new Vector3(x, this.characterBox.position.y, z));
+    this.characterBox.rotation.y += Math.PI;
+
     this.cameraContainer.locallyTranslate(
       new Vector3(
         this.camHorizontal * this.camSpeed * delta,
@@ -239,12 +270,9 @@ export default class GameScene {
         this.characterBox.position
       );
 
-      if (this.targetName === "base_ground")
-        if (distance < 1) return this.Stop();
-
-      this.characterBox.locallyTranslate(
-        new Vector3(0, 0, this.characterSpeed * delta)
-      );
+      if (this.targetName === "base_ground") {
+        if (distance < 1) return this.stop();
+      }
     }
   }
 }
