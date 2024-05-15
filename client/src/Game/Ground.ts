@@ -21,8 +21,8 @@ export default class Grounds {
 
     const groundMaterial = new StandardMaterial("groundMaterial");
 
-    const diffTexture = new Texture("../rocky_diff.jpg");
-    const normalTex = new Texture("../rocky_nor.jpg");
+    const diffTexture = new Texture("../material/rocky_diff.jpg");
+    const normalTex = new Texture("../material/rocky_nor.jpg");
 
     groundMaterial.diffuseTexture = diffTexture;
     groundMaterial.bumpTexture = normalTex;
@@ -44,5 +44,6 @@ export default class Grounds {
       },
       scene
     );
+    this.groundAggregate.shape.material.friction = 0;
   }
 }

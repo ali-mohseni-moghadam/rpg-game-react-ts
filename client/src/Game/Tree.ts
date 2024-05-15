@@ -14,6 +14,8 @@ import Game from "./Game";
 export default class Tree {
   scene: Scene;
 
+  treeArray: Nullable<AbstractMesh>[] = [];
+
   createTextMesh: (
     textToDisplay: string,
     color: string,
@@ -33,7 +35,7 @@ export default class Tree {
   async createTree() {
     const mainTree = await SceneLoader.ImportMeshAsync(
       "",
-      "../",
+      "../models/",
       "Tree.glb",
       this.scene
     );
@@ -46,7 +48,7 @@ export default class Tree {
 
     this.treeAggregate = new PhysicsAggregate(
       tree,
-      PhysicsShapeType.BOX,
+      PhysicsShapeType.CYLINDER,
       { mass: 0 },
       this.scene
     );
@@ -65,6 +67,7 @@ export default class Tree {
       this.createTextMesh("Tree", "brown", this.scene, treeClone, 4.9);
 
       if (treeClone) treeClone.position = new Vector3(randomX, 0, randomY);
+      this.treeArray.push(treeClone);
     }
 
     tree.dispose();

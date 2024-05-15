@@ -13,6 +13,7 @@ import Grounds from "./Ground";
 import GameScene from "./GameScene";
 import Tree from "./Tree";
 import HavokPhysics from "@babylonjs/havok";
+import Network from "./Network";
 
 export default class Game {
   private static instance: Game | undefined;
@@ -68,6 +69,8 @@ export default class Game {
       const debugLayer = new Debugger();
       await debugLayer.init();
     }
+
+    Network.getInstance().connectSocket();
 
     await this.scene.whenReadyAsync();
 

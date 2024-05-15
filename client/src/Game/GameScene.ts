@@ -1,15 +1,16 @@
 import {
   AbstractMesh,
-  ActionManager,
   AnimationGroup,
   CreateBox,
   CreatePlane,
-  ExecuteCodeAction,
+  // IBasePhysicsCollisionEvent,
   IPointerEvent,
   KeyboardInfo,
   Mesh,
   Nullable,
+  // Observable,
   PhysicsAggregate,
+  // PhysicsBody,
   PhysicsMotionType,
   PhysicsShapeType,
   Scene,
@@ -44,6 +45,7 @@ export default class GameScene {
   direction: Vector3 = Vector3.Zero();
 
   rootMesh!: AbstractMesh;
+  // characterBody!: PhysicsBody;
 
   // targetId: number | undefined;
 
@@ -57,8 +59,6 @@ export default class GameScene {
     this.scene.onPointerDown = (event: IPointerEvent) => {
       this.movePlayer(event);
     };
-
-    this.createTargetBox();
 
     this.scene.onKeyboardObservable.add(this.onKeyboard.bind(this));
     this.scene.onBeforeRenderObservable.add(this.update.bind(this));
@@ -87,7 +87,7 @@ export default class GameScene {
   async loadCharcter() {
     const Model = await SceneLoader.ImportMeshAsync(
       "",
-      "../",
+      "../models/",
       "character.glb",
       this.scene
     );
@@ -115,16 +115,17 @@ export default class GameScene {
     // physics
     this.characterAggregate = new PhysicsAggregate(
       this.characterBox,
-      PhysicsShapeType.BOX,
-      undefined,
-      this.scene
+      PhysicsShapeType.BOX
     );
+
+    this.characterAggregate.shape.material.friction = 0;
+
     this.characterAggregate.body.setMassProperties({
       mass: 1,
       inertia: Vector3.Zero(),
     });
     this.characterAggregate.body.setMotionType(PhysicsMotionType.DYNAMIC);
-    // console.log(this.characterAggregate.body.getMotionType());
+
     this.createTextMesh("Ali", "White", this.scene, this.characterBox, 2);
   }
 
@@ -140,6 +141,7 @@ export default class GameScene {
       if (!pickInfo.pickedMesh) return;
 
       this.targetName = pickInfo.pickedMesh.name;
+      console.log(this.targetName);
       // this.targetId = pickInfo.pickedMesh.id;
 
       pickInfo.pickedPoint.y = this.characterBox.position.y;
@@ -154,16 +156,21 @@ export default class GameScene {
         this.characterBox.position
       );
       this.direction.normalize();
-      this.direction = this.direction.scale(4);
+      console.log(this.direction);
+      this.direction = this.direction.scale(this.characterSpeed);
 
       if (this.targetName === "base_ground") {
+        if (this.direction) this.run();
         if (distance < 1) return console.log("we are near our target");
-        if (this.direction) this.run(this.ourTargetPosition);
+      }
+      if (this.targetName === "tree") {
+        if (this.direction) this.run();
+        if (distance < 1) this.stop();
       }
     }
   }
 
-  run(ourTargetPosition: Vector3) {
+  run() {
     this.isMoving = true;
     this.isAttacking = false;
 
@@ -188,32 +195,6 @@ export default class GameScene {
 
   caculateDistance(ourTargetPosition: Vector3, ourPosition: Vector3) {
     return Vector3.Distance(ourTargetPosition, ourPosition);
-  }
-
-  createTargetBox() {
-    if (!this.characterBox) return;
-    const targetBox = CreateBox(
-      "targetbox",
-      {
-        size: 1,
-        height: 1,
-      },
-      this.scene
-    );
-    targetBox.isPickable = false;
-    targetBox.isVisible = false;
-    targetBox.actionManager = new ActionManager(this.scene);
-    targetBox.actionManager.registerAction(
-      new ExecuteCodeAction(
-        {
-          trigger: ActionManager.OnIntersectionEnterTrigger,
-          parameter: this.characterBox,
-        },
-        () => {
-          this.stop();
-        }
-      )
-    );
   }
 
   createTextMesh(
@@ -251,11 +232,6 @@ export default class GameScene {
 
     this.characterAggregate.body.setLinearVelocity(this.direction);
 
-    if (!this.ourTargetPosition) return;
-    const { x, z } = this.ourTargetPosition;
-    this.characterBox.lookAt(new Vector3(x, this.characterBox.position.y, z));
-    this.characterBox.rotation.y += Math.PI;
-
     this.cameraContainer.locallyTranslate(
       new Vector3(
         this.camHorizontal * this.camSpeed * delta,
@@ -264,14 +240,25 @@ export default class GameScene {
       )
     );
 
+    if (!this.ourTargetPosition) return;
+    const { x, z } = this.ourTargetPosition;
+    this.characterBox.lookAt(
+      new Vector3(x, this.characterBox.position.y, z),
+      0,
+      0,
+      0
+    );
+
+    this.characterBox.rotation.y += Math.PI;
+
     if (this.isMoving && this.ourTargetPosition) {
       const distance = this.caculateDistance(
         this.ourTargetPosition,
         this.characterBox.position
       );
 
-      if (this.targetName === "base_ground") {
-        if (distance < 1) return this.stop();
+      if (this.targetName === "base_ground" || this.targetName === "tree") {
+        if (distance < 0.5) return this.stop();
       }
     }
   }
