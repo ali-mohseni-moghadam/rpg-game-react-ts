@@ -1,43 +1,33 @@
 import {
   AbstractMesh,
-  Mesh,
   Nullable,
   PhysicsAggregate,
   PhysicsShapeType,
   Scalar,
-  Scene,
   SceneLoader,
   Vector3,
 } from "@babylonjs/core";
+
 import Game from "./Game";
 
+import "@babylonjs/loaders";
 export default class Tree {
-  scene: Scene;
-
   treeArray: Nullable<AbstractMesh>[] = [];
-
-  createTextMesh: (
-    textToDisplay: string,
-    color: string,
-    scene: Scene,
-    theParent: Nullable<AbstractMesh>,
-    posY: number
-  ) => Mesh;
 
   treeAggregate!: PhysicsAggregate;
 
   constructor() {
-    this.scene = Game.getInstance().scene;
-    this.createTextMesh = Game.getInstance().gameScene.createTextMesh;
     this.createTree();
   }
 
   async createTree() {
+    const scene = Game.getInstance().scene;
+
     const mainTree = await SceneLoader.ImportMeshAsync(
       "",
       "../models/",
       "Tree.glb",
-      this.scene
+      scene
     );
 
     if (!mainTree) return;
@@ -50,7 +40,7 @@ export default class Tree {
       tree,
       PhysicsShapeType.CYLINDER,
       { mass: 0 },
-      this.scene
+      scene
     );
 
     let treeLength = 25;
@@ -64,7 +54,9 @@ export default class Tree {
 
       if (!treeClone?.physicsBody) return;
       treeClone.physicsBody.disablePreStep = false;
-      this.createTextMesh("Tree", "brown", this.scene, treeClone, 4.9);
+
+      const text = Game.getInstance().textMesh;
+      text.createText("Tree", "brown", scene, treeClone, 4.9);
 
       if (treeClone) treeClone.position = new Vector3(randomX, 0, randomY);
       this.treeArray.push(treeClone);

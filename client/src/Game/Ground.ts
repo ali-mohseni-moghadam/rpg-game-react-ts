@@ -44,6 +44,7 @@ export default class Grounds {
       },
       scene
     );
+
     this.groundAggregate.shape.material.friction = 0;
   }
 }

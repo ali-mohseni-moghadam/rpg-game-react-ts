@@ -4,6 +4,7 @@ export default class Network {
   private static instance: Network | undefined;
 
   socket!: Socket;
+
   static getInstance() {
     if (!this.instance) {
       this.instance = new Network();

@@ -14,6 +14,13 @@ import GameScene from "./GameScene";
 import Tree from "./Tree";
 import HavokPhysics from "@babylonjs/havok";
 import Network from "./Network";
+import OnKeyboard from "./OnKeyboard";
+import CalculateDistance from "./CalculateDistance";
+import TextMesh from "./TextMesh";
+import Player from "./Player";
+import MovePlayer from "./MovePlayer";
+import RunPlayer from "./RunPlayer";
+import StopPlayer from "./StopPlayer";
 
 export default class Game {
   private static instance: Game | undefined;
@@ -37,8 +44,16 @@ export default class Game {
   cleanUpObservable = new Observable();
   resizeObservable = new Observable();
   isInitialized = false;
+
   gameScene!: GameScene;
   tree!: Tree;
+  keyboardHandler!: OnKeyboard;
+  calculateDistannce!: CalculateDistance;
+  textMesh!: TextMesh;
+  player!: Player;
+  movePlayer!: MovePlayer;
+  runPlayer!: RunPlayer;
+  stopPlayer!: StopPlayer;
 
   async init(canvas: HTMLCanvasElement) {
     if (this.isInitialized) return;
@@ -63,12 +78,20 @@ export default class Game {
     new Grounds();
 
     this.gameScene = new GameScene();
-    this.tree = new Tree();
 
     if (process.env.NODE_ENV === "development") {
       const debugLayer = new Debugger();
       await debugLayer.init();
     }
+
+    this.tree = new Tree();
+    this.keyboardHandler = new OnKeyboard();
+    this.calculateDistannce = new CalculateDistance();
+    this.textMesh = new TextMesh();
+    this.player = new Player();
+    this.movePlayer = new MovePlayer();
+    this.runPlayer = new RunPlayer();
+    this.stopPlayer = new StopPlayer();
 
     Network.getInstance().connectSocket();
 
