@@ -10,17 +10,12 @@ import Environment from "./Environment";
 import Camera from "./Camera";
 import Grounds from "./Ground";
 // import useStore from "../store/index.store";
-import GameScene from "./GameScene";
-import Tree from "./Tree";
+// import Tree from "./Tree";
 import HavokPhysics from "@babylonjs/havok";
 import Network from "./Network";
 import OnKeyboard from "./OnKeyboard";
-import CalculateDistance from "./CalculateDistance";
 import TextMesh from "./TextMesh";
 import Player from "./Player";
-import MovePlayer from "./MovePlayer";
-import RunPlayer from "./RunPlayer";
-import StopPlayer from "./StopPlayer";
 
 export default class Game {
   private static instance: Game | undefined;
@@ -45,15 +40,10 @@ export default class Game {
   resizeObservable = new Observable();
   isInitialized = false;
 
-  gameScene!: GameScene;
-  tree!: Tree;
-  keyboardHandler!: OnKeyboard;
-  calculateDistannce!: CalculateDistance;
+  // tree!: Tree
   textMesh!: TextMesh;
+  keyboardHandler!: OnKeyboard;
   player!: Player;
-  movePlayer!: MovePlayer;
-  runPlayer!: RunPlayer;
-  stopPlayer!: StopPlayer;
 
   async init(canvas: HTMLCanvasElement) {
     if (this.isInitialized) return;
@@ -77,21 +67,15 @@ export default class Game {
     new Environment();
     new Grounds();
 
-    this.gameScene = new GameScene();
-
     if (process.env.NODE_ENV === "development") {
       const debugLayer = new Debugger();
       await debugLayer.init();
     }
 
-    this.tree = new Tree();
+    // this.tree = new Tree();
     this.keyboardHandler = new OnKeyboard();
-    this.calculateDistannce = new CalculateDistance();
     this.textMesh = new TextMesh();
     this.player = new Player();
-    this.movePlayer = new MovePlayer();
-    this.runPlayer = new RunPlayer();
-    this.stopPlayer = new StopPlayer();
 
     Network.getInstance().connectSocket();
 
@@ -114,7 +98,7 @@ export default class Game {
 
   async initPhysics() {
     const hk = await HavokPhysics();
-    const gravityVector = new Vector3(0, -5, 0);
+    const gravityVector = new Vector3(0, -9.8, 0);
     const physicsPlugin = new HavokPlugin(true, hk);
     this.scene.enablePhysics(gravityVector, physicsPlugin);
   }

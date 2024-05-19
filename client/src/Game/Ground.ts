@@ -41,10 +41,9 @@ export default class Grounds {
       PhysicsShapeType.BOX,
       {
         mass: 0,
+        friction: 0,
       },
       scene
     );
-
-    this.groundAggregate.shape.material.friction = 0;
   }
 }
