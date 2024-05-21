@@ -15,6 +15,7 @@ import {
 import Game from "./Game";
 
 import "@babylonjs/loaders";
+import Network from "./Network";
 
 export default class Player {
   scene!: Scene;
@@ -75,10 +76,6 @@ export default class Player {
     this.characterBox.position.y += 1;
 
     this.animation.forEach((anim) => anim.name === "idle" && anim.play(true));
-
-    // name text
-    const text = Game.getInstance().textMesh;
-    text.createText("Hero", "White", this.scene, this.characterBox, 2);
 
     // physics
     this.characterAggregate = new PhysicsAggregate(
@@ -182,6 +179,11 @@ export default class Player {
         camVertical * camSpeed * delta
       )
     );
+
+    if (this.characterBox) {
+      const network = Network.getInstance();
+      network.sendPosition(this.characterBox.position);
+    }
 
     if (!this.ourTargetPosition) return;
     const targetVector = new Vector3(

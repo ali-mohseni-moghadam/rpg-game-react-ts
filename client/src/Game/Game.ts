@@ -16,6 +16,7 @@ import Network from "./Network";
 import OnKeyboard from "./OnKeyboard";
 import TextMesh from "./TextMesh";
 import Player from "./Player";
+// import Enemy from "./Enemy";
 
 export default class Game {
   private static instance: Game | undefined;
@@ -44,6 +45,7 @@ export default class Game {
   textMesh!: TextMesh;
   keyboardHandler!: OnKeyboard;
   player!: Player;
+  // enemy!: Enemy;
 
   async init(canvas: HTMLCanvasElement) {
     if (this.isInitialized) return;
@@ -76,6 +78,7 @@ export default class Game {
     this.keyboardHandler = new OnKeyboard();
     this.textMesh = new TextMesh();
     this.player = new Player();
+    // this.enemy = new Enemy();
 
     Network.getInstance().connectSocket();
 
