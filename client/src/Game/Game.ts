@@ -15,8 +15,7 @@ import HavokPhysics from "@babylonjs/havok";
 import Network from "./Network";
 import OnKeyboard from "./OnKeyboard";
 import TextMesh from "./TextMesh";
-import Player from "./Player";
-// import Enemy from "./Enemy";
+// import Player from "./Player";
 
 export default class Game {
   private static instance: Game | undefined;
@@ -44,8 +43,7 @@ export default class Game {
   // tree!: Tree
   textMesh!: TextMesh;
   keyboardHandler!: OnKeyboard;
-  player!: Player;
-  // enemy!: Enemy;
+  // player!: Player;
 
   async init(canvas: HTMLCanvasElement) {
     if (this.isInitialized) return;
@@ -77,8 +75,7 @@ export default class Game {
     // this.tree = new Tree();
     this.keyboardHandler = new OnKeyboard();
     this.textMesh = new TextMesh();
-    this.player = new Player();
-    // this.enemy = new Enemy();
+    // this.player = new Player();
 
     Network.getInstance().connectSocket();
 

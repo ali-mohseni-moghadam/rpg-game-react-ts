@@ -1,10 +1,24 @@
-import { Vector3 } from "@babylonjs/core";
 import { io, Socket } from "socket.io-client";
+import Enemy from "./Enemy";
+import { Vector3 } from "@babylonjs/core";
+import Player from "./Player";
+
+type playerData = {
+  id: string;
+  position: {
+    x: number;
+    z: number;
+  };
+};
 
 export default class Network {
   private static instance: Network | undefined;
 
   socket!: Socket;
+
+  isPlayerCreated = false;
+
+  enemy = new Map();
 
   static getInstance() {
     if (!this.instance) {
@@ -16,33 +30,30 @@ export default class Network {
   connectSocket() {
     this.socket = io("http://localhost:5000/");
 
-    this.socket.on("connect", () => {
-      console.log(`Connected to the server`);
+    this.socket.on("updatePlayers", (players: playerData[]) => {
+      players.forEach((item: playerData) => {
+        if (item.id === this.socket.id) {
+          if (this.isPlayerCreated) return;
+          const player = new Player();
+          this.isPlayerCreated = true;
+          this.enemy.set(item.id, player);
+        } else if (!this.enemy.has(item.id)) {
+          const enemy = new Enemy(
+            new Vector3(item.position.x, 1, item.position.z)
+          );
+          this.enemy.set(item.id, enemy);
+        }
+      });
     });
 
-    this.socket.on("userConnected", (data) => {
-      console.log(`User ${data.socketId} has connected`);
-    });
-
-    this.socket.on("position", (data) => {
-      console.log(data);
-    });
-
-    this.socket.on("userDisconnected", (data) => {
-      console.log(`User ${data.socketId} has disconnected`);
-    });
-
-    this.socket.on("disconnect", () => {
-      console.log("Disconnected from the server");
-    });
+    console.log(this.enemy);
   }
 
-  sendPosition(position: Vector3) {
+  sendPosition(posX: number, posY: number) {
     if (this.socket) {
-      this.socket.emit("position", {
-        positionX: position.x,
-        positionY: position.y,
-        positionZ: position.z,
+      this.socket.emit("update", {
+        positionX: posX,
+        positionZ: posY,
       });
     }
   }

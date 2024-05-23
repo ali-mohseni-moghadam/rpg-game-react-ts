@@ -1,97 +1,17 @@
-import {
-  AbstractMesh,
-  AnimationGroup,
-  CreateBox,
-  IPointerEvent,
-  Mesh,
-  PhysicsAggregate,
-  PhysicsMotionType,
-  PhysicsShapeType,
-  Scene,
-  SceneLoader,
-  Vector3,
-} from "@babylonjs/core";
-
+import { IPointerEvent, Vector3 } from "@babylonjs/core";
+import CharacterBase from "./CharacterBase";
 import Game from "./Game";
-
-import "@babylonjs/loaders";
 import Network from "./Network";
 
-export default class Player {
-  scene!: Scene;
-
-  rootMesh!: AbstractMesh;
-  characterBox!: Mesh;
-  characterAggregate!: PhysicsAggregate;
-
-  animation!: AnimationGroup[];
-
-  ourTargetPosition: Vector3 | undefined;
-  direction: Vector3 = Vector3.Zero();
-  targetName!: string;
-
-  distance!: number;
-
-  isMoving: boolean = false;
-
+export default class Player extends CharacterBase {
   constructor() {
-    this.scene = Game.getInstance().scene;
-
-    this.createPlayer();
+    super();
 
     this.scene.onPointerDown = (event: IPointerEvent) => {
       this.move(event);
     };
 
     this.scene.onBeforeRenderObservable.add(this.update.bind(this));
-  }
-
-  async createPlayer() {
-    // import model
-    const Model = await SceneLoader.ImportMeshAsync(
-      "",
-      "../models/",
-      "character.glb"
-    );
-    if (!Model) return;
-
-    // animation
-    this.animation = Model.animationGroups;
-
-    const meshes = Model.meshes;
-    this.rootMesh = meshes[0];
-
-    // character box
-    this.characterBox = CreateBox(
-      "characterBox",
-      {
-        size: 1,
-        height: 2,
-      },
-      this.scene
-    );
-    this.rootMesh.parent = this.characterBox;
-    this.characterBox.visibility = 0;
-    this.rootMesh.position.y = -1;
-    this.characterBox.position.y += 1;
-
-    this.animation.forEach((anim) => anim.name === "idle" && anim.play(true));
-
-    // physics
-    this.characterAggregate = new PhysicsAggregate(
-      this.characterBox,
-      PhysicsShapeType.BOX,
-      {
-        mass: 1,
-        friction: 0,
-      }
-    );
-
-    this.characterAggregate.body.setMassProperties({
-      inertia: Vector3.Zero(),
-    });
-
-    this.characterAggregate.body.setMotionType(PhysicsMotionType.DYNAMIC);
   }
 
   move(event: IPointerEvent) {
@@ -133,33 +53,6 @@ export default class Player {
     }
   }
 
-  run() {
-    this.isMoving = true;
-    if (!this.animation) return;
-    this.animation.forEach((anim) => {
-      if (anim.name === "idle") {
-        anim.stop();
-      } else if (anim.name === "running") {
-        anim.play(true);
-      }
-    });
-  }
-
-  stop() {
-    this.isMoving = false;
-    this.animation.forEach((anim) => anim.name === "running" && anim.stop());
-    this.animation.forEach((anim) => anim.name === "idle" && anim.play(true));
-    this.ourTargetPosition = undefined;
-    this.direction.set(0, 0, 0);
-    if (this.characterAggregate.body) {
-      this.characterAggregate.body.setLinearVelocity(Vector3.Zero());
-    }
-  }
-
-  caculateDistance(targetPosition: Vector3, ourPosition: Vector3) {
-    return Vector3.Distance(targetPosition, ourPosition);
-  }
-
   update() {
     // variables
     const engine = Game.getInstance().engine;
@@ -182,7 +75,10 @@ export default class Player {
 
     if (this.characterBox) {
       const network = Network.getInstance();
-      network.sendPosition(this.characterBox.position);
+      network.sendPosition(
+        this.characterBox.position.x,
+        this.characterBox.position.z
+      );
     }
 
     if (!this.ourTargetPosition) return;

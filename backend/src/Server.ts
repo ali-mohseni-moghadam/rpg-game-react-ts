@@ -21,7 +21,6 @@ type clientData = {
   id: string;
   position: {
     x: number;
-    y: number;
     z: number;
   };
 };
@@ -29,41 +28,26 @@ type clientData = {
 const clients: clientData[] = [];
 
 io.on("connection", (socket) => {
-  console.log(`user connected : ${socket.id}`);
-
   clients.push({
     id: socket.id,
     position: {
       x: 0,
-      y: 0,
       z: 0,
     },
   });
 
-  let client: clientData;
+  io.emit("updatePlayers", clients);
 
-  // emit to any user that client has online
-  socket.broadcast.emit("userConnected", { socketId: socket.id });
-
-  socket.on("position", (position) => {
-    console.log(`recived position from user ${socket.id} :`, position);
-
-    clients.forEach((item) => {
-      if (item.id === socket.id) {
-        item.position = position;
-
-        return item;
-      }
-    });
-
-    socket.timeout(5000).broadcast.emit("position", clients);
-  });
+  // socket.on("update", (data) => {
+  //   console.log(data);
+  // });
 
   socket.on("disconnect", () => {
+    clients.splice(1, 1);
     console.log(`User disconnected: ${socket.id}`);
+    console.log("numbers of players : ", clients.length);
 
-    // emit to any user that client has offline
-    socket.broadcast.emit("userDisconnected", { socketId: socket.id });
+    io.emit("updatePlayers", clients);
   });
 });
 
