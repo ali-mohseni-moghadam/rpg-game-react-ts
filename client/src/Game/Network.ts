@@ -1,6 +1,5 @@
 import { io, Socket } from "socket.io-client";
 import Enemy from "./Enemy";
-import { Vector3 } from "@babylonjs/core";
 import Player from "./Player";
 
 type playerData = {
@@ -18,7 +17,7 @@ export default class Network {
 
   isPlayerCreated = false;
 
-  enemy = new Map();
+  characters = new Map<string, Enemy>();
 
   static getInstance() {
     if (!this.instance) {
@@ -34,26 +33,33 @@ export default class Network {
       players.forEach((item: playerData) => {
         if (item.id === this.socket.id) {
           if (this.isPlayerCreated) return;
-          const player = new Player();
+          new Player();
           this.isPlayerCreated = true;
-          this.enemy.set(item.id, player);
-        } else if (!this.enemy.has(item.id)) {
-          const enemy = new Enemy(
-            new Vector3(item.position.x, 1, item.position.z)
-          );
-          this.enemy.set(item.id, enemy);
+        } else if (!this.characters.has(item.id)) {
+          const enemy = new Enemy();
+          this.characters.set(item.id, enemy);
+        }
+      });
+
+      // delete players
+    });
+
+    this.socket.on("updatePosition", (players: playerData[]) => {
+      players.forEach((item: playerData) => {
+        if (this.socket.id !== item.id) {
+          const enemy = this.characters.get(item.id);
+          if (!enemy) return;
+          enemy.characterBox.position.set(item.position.x, 1, item.position.z);
         }
       });
     });
-
-    console.log(this.enemy);
   }
 
   sendPosition(posX: number, posY: number) {
     if (this.socket) {
       this.socket.emit("update", {
-        positionX: posX,
-        positionZ: posY,
+        x: posX,
+        z: posY,
       });
     }
   }

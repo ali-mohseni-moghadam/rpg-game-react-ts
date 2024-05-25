@@ -28,6 +28,7 @@ type clientData = {
 const clients: clientData[] = [];
 
 io.on("connection", (socket) => {
+  console.log(`user : ${socket.id}`);
   clients.push({
     id: socket.id,
     position: {
@@ -36,20 +37,32 @@ io.on("connection", (socket) => {
     },
   });
 
+  console.log("numbers of players : ", clients.length);
+
   io.emit("updatePlayers", clients);
 
-  // socket.on("update", (data) => {
-  //   console.log(data);
-  // });
+  socket.on("update", (data) => {
+    clients.forEach((item) => {
+      if (item.id === socket.id) {
+        item.position = data;
+      }
+
+      return item;
+    });
+  });
 
   socket.on("disconnect", () => {
-    clients.splice(1, 1);
+    clients.splice(0, 1);
     console.log(`User disconnected: ${socket.id}`);
     console.log("numbers of players : ", clients.length);
 
     io.emit("updatePlayers", clients);
   });
 });
+
+setInterval(() => {
+  io.emit("updatePosition", clients);
+}, 30);
 
 httpServer.listen(5000, () => {
   console.log("server running at http://localhost:5000");

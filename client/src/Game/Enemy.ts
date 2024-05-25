@@ -10,12 +10,8 @@ import CharacterBase from "./CharacterBase";
 import Game from "./Game";
 
 export default class Enemy extends CharacterBase {
-  serverPos: Vector3;
-
-  constructor(data: Vector3) {
+  constructor() {
     super();
-
-    this.serverPos = data;
   }
 
   async createPlayer(): Promise<void> {
@@ -47,9 +43,6 @@ export default class Enemy extends CharacterBase {
     this.rootMesh.position.y = -1;
     this.characterBox.position.y += 1;
 
-    this.characterBox.position.x = this.serverPos.x;
-    this.characterBox.position.z = this.serverPos.z;
-
     this.animation.forEach((anim) => anim.name === "idle" && anim.play(true));
 
     const text = Game.getInstance().textMesh;
@@ -69,6 +62,7 @@ export default class Enemy extends CharacterBase {
       inertia: Vector3.Zero(),
     });
 
-    this.characterAggregate.body.setMotionType(PhysicsMotionType.DYNAMIC);
+    this.characterAggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
+    this.characterAggregate.body.disablePreStep = false;
   }
 }
