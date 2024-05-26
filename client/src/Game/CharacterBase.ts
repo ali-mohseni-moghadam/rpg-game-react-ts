@@ -94,29 +94,6 @@ export default class CharacterBase {
     this.characterAggregate.body.setMotionType(PhysicsMotionType.DYNAMIC);
   }
 
-  run() {
-    this.isMoving = true;
-    if (!this.animation) return;
-    this.animation.forEach((anim) => {
-      if (anim.name === "idle") {
-        anim.stop();
-      } else if (anim.name === "running") {
-        anim.play(true);
-      }
-    });
-  }
-
-  stop() {
-    this.isMoving = false;
-    this.animation.forEach((anim) => anim.name === "running" && anim.stop());
-    this.animation.forEach((anim) => anim.name === "idle" && anim.play(true));
-    this.ourTargetPosition = undefined;
-    this.direction.set(0, 0, 0);
-    if (this.characterAggregate.body) {
-      this.characterAggregate.body.setLinearVelocity(Vector3.Zero());
-    }
-  }
-
   caculateDistance(targetPosition: Vector3, ourPosition: Vector3) {
     return Vector3.Distance(targetPosition, ourPosition);
   }
